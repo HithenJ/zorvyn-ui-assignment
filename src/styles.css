@@ -1,1 +1,34 @@
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global Icon Utilities for Bootstrap Icons Integration */
+.bi {
+  display: inline-block;
+  vertical-align: -0.125em;
+  line-height: 1;
+}
+
+.bi-status-icon {
+  @apply text-xl flex items-center justify-center;
+}
+
 /* You can add global styles to this file, and also import other style files */
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+}
+
+/* Fix: Tailwind base layer sets white bg on inputs — override for dark mode */
+@layer base {
+  .dark input,
+  .dark textarea,
+  .dark select,
+  .dark button {
+    color-scheme: dark;
+  }
+}

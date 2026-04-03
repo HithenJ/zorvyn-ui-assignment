@@ -1,0 +1,26 @@
+<div (click)="cardClick.emit()" 
+     class="bg-zinc-50 dark:bg-zinc-900 p-6 rounded-3xl border border-slate-100 dark:border-white/5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none hover:shadow-2xl transition-all duration-500 group cursor-pointer active:scale-95"
+     [ngClass]="hoverShadowColor">
+  <div class="flex items-center justify-between">
+    <div class="flex-1">
+      <p class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{{ title }}</p>
+      <p class="text-2xl font-black text-slate-900 dark:text-white mt-1 group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
+        {{ formattedAmount }}
+      </p>
+      
+      <div class="flex items-center mt-3" *ngIf="change !== 0">
+        <div [class]="changeColor" class="flex items-center bg-slate-50 dark:bg-white/5 px-2 py-1 rounded-lg border border-slate-100 dark:border-white/5">
+          <i [class]="change >= 0 ? 'bi bi-trending-up' : 'bi bi-trending-down'" class="mr-1"></i>
+          <span class="text-xs font-black">{{ formattedChange }}</span>
+        </div>
+        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider ml-2">MoM Growth</span>
+      </div>
+    </div>
+    
+    <div class="flex-shrink-0">
+      <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner transition-transform group-hover:scale-110 duration-500" [class]="cardColor">
+        <i [class]="'bi ' + iconClassName + ' ' + iconColor" class="text-2xl"></i>
+      </div>
+    </div>
+  </div>
+</div>

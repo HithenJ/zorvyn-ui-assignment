@@ -1,0 +1,187 @@
+<div class="container-fluid p-0 animate-in fade-in slide-in-from-bottom-4 duration-700">
+  
+  <!-- Institutional Header & Smart Filter Suite -->
+  <div class="row g-3 mb-4 pb-3 border-bottom border-zinc-100 dark:border-white/5 align-items-center">
+    <div class="col-lg-4">
+      <div class="d-flex flex-column">
+        <h2 class="h5 fw-bold text-zinc-900 dark:text-zinc-50 mb-1 d-flex align-items-center gap-2">
+          Activity Audit Ledger
+          <span class="badge bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 fw-bold rounded-pill uppercase tracking-tighter" style="font-size: 0.6rem; padding: 0.25em 0.6em;">ACTIVE</span>
+        </h2>
+        <p class="small text-zinc-400 mb-0 opacity-75">
+          {{ displayTransactions.length }} digital records consolidated ({{ dateRangeLabel }})
+        </p>
+      </div>
+    </div>
+
+    <!-- Smart Multi-Utility Filter Bar -->
+    <div class="col-lg-8">
+      <div class="d-flex flex-wrap justify-content-lg-end align-items-center gap-3">
+        
+        <!-- Bootstrap Native Date Range (High Precision) -->
+        <div class="input-group input-group-sm w-auto shadow-sm">
+          <span class="input-group-text bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-white/10 text-primary">
+            <i class="bi bi-calendar-range"></i>
+          </span>
+          <input 
+            type="date" 
+            [(ngModel)]="startDate"
+            (change)="onDateChange()"
+            class="form-control bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-zinc-100 fw-bold"
+            style="width: 130px; font-size: 0.75rem;">
+          <span class="input-group-text bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-white/10 text-zinc-400 fw-bold px-2">to</span>
+          <input 
+            type="date" 
+            [(ngModel)]="endDate"
+            (change)="onDateChange()"
+            class="form-control bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-zinc-100 fw-bold"
+            style="width: 130px; font-size: 0.75rem;">
+        </div>
+
+        <!-- Integrated Search & Export -->
+        <div class="input-group input-group-sm w-auto shadow-sm">
+          <span class="input-group-text bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-white/10">
+            <i class="bi bi-search text-zinc-400"></i>
+          </span>
+          <input 
+            type="text" 
+            [(ngModel)]="searchTerm"
+            (input)="onSearchChange()"
+            placeholder="Audit filtration..." 
+            class="form-control bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-white/10 text-zinc-900 dark:text-zinc-100 fw-semibold"
+            style="width: 160px; font-size: 0.75rem;">
+          <button (click)="export.emit()" class="btn btn-outline-secondary border-zinc-200 dark:border-white/10 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-900" title="Export Segment">
+            <i class="bi bi-download"></i>
+          </button>
+        </div>
+
+        <!-- Admin Delta Ingress -->
+        <button *ngIf="currentRole === 'admin'" (click)="add.emit()" class="btn btn-primary btn-sm px-3 fw-bold d-flex align-items-center gap-2 shadow-sm">
+          <i class="bi bi-plus-circle-fill"></i>
+          <span class="text-uppercase tracking-wider" style="font-size: 0.7rem;">New Transaction</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="searchTerm || selectedCategory !== 'All Categories' || selectedType !== 'all'" 
+       class="mb-6 p-4 bg-zinc-100/50 dark:bg-white/5 rounded-2xl border border-zinc-200 dark:border-white/5 flex items-center justify-between animate-in fade-in slide-in-from-top-2">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-rose-500/10 flex items-center justify-center">
+        <i class="bi bi-funnel-fill text-rose-500 text-xs"></i>
+      </div>
+      <div>
+        <p class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 leading-none">
+          Showing <span class="text-rose-500 text-[11px] uppercase tracking-wider">{{ selectedType === 'all' ? 'All' : selectedType }}</span> 
+          results for <span class="bg-rose-500/10 text-rose-500 px-2 py-0.5 rounded-md">"{{ searchTerm || selectedCategory }}"</span>
+        </p>
+        <p class="text-[10px] text-zinc-500 mt-1 uppercase tracking-widest font-black">{{ displayTransactions.length }} records matches</p>
+      </div>
+    </div>
+    <button (click)="searchTerm = ''; selectedType = 'all'; onSearchChange()" 
+            class="text-[10px] font-black uppercase text-rose-500 hover:text-rose-600 tracking-widest px-3 py-1.5 hover:bg-rose-500/5 rounded-lg transition-all">
+      Clear Audit
+    </button>
+  </div>
+
+  <!-- Industrial Smart Ledger Table -->
+  <div *ngIf="!loading && displayTransactions.length > 0; else emptyState" class="card border-0 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none overflow-hidden bg-transparent">
+    <div *ngFor="let group of groupedTransactions" class="mb-4">
+      <!-- Minimalist Group Header -->
+      <div class="d-flex align-items-center gap-3 mb-2 px-1">
+        <span class="badge bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 fw-bold text-uppercase border border-zinc-200 dark:border-white/5" style="letter-spacing: 0.1em; font-size: 0.65rem;">
+          {{ isToday(group.date) ? 'TODAY' : group.date }}
+        </span>
+        <div class="flex-grow-1 border-bottom border-zinc-100 dark:border-white/5 opacity-50"></div>
+      </div>
+
+      <div class="table-responsive rounded-3 border border-zinc-200 dark:border-white/5 bg-zinc-50/50 dark:bg-zinc-950/40 backdrop-blur-sm">
+        <table class="table table-hover align-middle mb-0 text-zinc-900 dark:text-zinc-100">
+          <thead class="bg-zinc-100/50 dark:bg-white/5">
+            <tr class="text-zinc-400" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.15em;">
+              <th scope="col" class="ps-4 py-2 fw-black border-0">Status</th>
+              <th scope="col" class="py-2 fw-black border-0">Audit Description</th>
+              <th scope="col" class="py-2 fw-black border-0">Category Segment</th>
+              <th scope="col" class="py-2 fw-black border-0 d-none d-md-table-cell">Temporal Stamp</th>
+              <th scope="col" class="pe-4 py-2 fw-black border-0 text-end">Delta Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let tx of group.items" class="border-zinc-100 dark:border-white/5 transition-all">
+              <td class="ps-4">
+                <span [ngClass]="tx.type === 'income' ? 'text-emerald-500 bg-emerald-500/10' : 'text-rose-500 bg-rose-500/10'" 
+                      class="px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border border-current opacity-80">
+                  {{ tx.type }}
+                </span>
+              </td>
+              <td class="fw-semibold" style="font-size: 0.85rem;">
+                {{ tx.description }}
+              </td>
+              <td>
+                <span class="text-zinc-400 text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 0.05em;">{{ tx.category }}</span>
+              </td>
+              <td class="d-none d-md-table-cell">
+                <span class="text-zinc-400" style="font-size: 0.75rem;">{{ tx.date | date:'h:mm a' }}</span>
+              </td>
+              <td class="pe-4 text-end">
+                <div class="d-flex align-items-center justify-content-end gap-3 group">
+                  <span [ngClass]="tx.type === 'income' ? 'text-emerald-500' : 'text-rose-500 dark:text-rose-400'" 
+                        class="fw-bold tabular-nums" style="font-size: 0.95rem;">
+                    {{ tx.type === 'income' ? '+' : '-' }}{{ tx.amount | currency:'INR':'symbol':'1.0-0' }}
+                  </span>
+                  
+                  <!-- Responsive Admin Control Suite -->
+                  <div *ngIf="currentRole === 'admin'" class="d-flex gap-1 hover-reveal">
+                    <button (click)="edit.emit(tx)" class="btn btn-link p-1 text-zinc-400 hover-primary">
+                      <i class="bi bi-pencil-square" style="font-size: 0.8rem;"></i>
+                    </button>
+                    <button (click)="delete.emit(tx.id)" class="btn btn-link p-1 text-zinc-400 hover-danger">
+                      <i class="bi bi-trash" style="font-size: 0.8rem;"></i>
+                    </button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Specialized Empty & Loading States -->
+  <div *ngIf="loading" class="space-y-8">
+    <div *ngFor="let i of [1,2,3,4]" class="h-28 bg-slate-50 dark:bg-slate-800/40 animate-pulse rounded-4 border border-slate-100 dark:border-white/5"></div>
+  </div>
+
+  <ng-template #emptyState>
+    <div class="text-center py-5 my-5 border-2 border-dashed border-zinc-200 dark:border-white/5 rounded-4">
+      <div class="d-inline-flex align-items-center justify-content-center bg-zinc-50 dark:bg-zinc-800 rounded-circle mb-3" style="width: 80px; height: 80px;">
+        <i class="bi bi-inbox text-zinc-300 h2 mb-0"></i>
+      </div>
+      <h3 class="h6 fw-bold text-zinc-900 dark:text-zinc-50 mb-1">No Ledger Anomalies Detected</h3>
+      <p class="text-zinc-400 small mb-0">Adjust your temporal filters or ingress parameters.</p>
+    </div>
+  </ng-template>
+
+</div>
+
+<!-- Bootstrap-Tailwind Bridge CSS (Component Specific) -->
+<style>
+  .bg-rose-subtle { background-color: rgba(244, 63, 94, 0.1); }
+  .text-primary { color: #f43f5e !important; }
+  .btn-primary { background-color: #f43f5e; border-color: #f43f5e; }
+  .btn-primary:hover { background-color: #e11d48; border-color: #e11d48; }
+  .bg-emerald-500 { background-color: #10b981; }
+  .bg-rose-500 { background-color: #f43f5e; }
+  .text-emerald-500 { color: #10b981; }
+  .text-rose-500 { color: #f43f5e; }
+  .dark-table-header { background-color: rgba(255, 255, 255, 0.02) !important; }
+  .hover-primary:hover { color: #f43f5e !important; }
+  .hover-danger:hover { color: #e11d48 !important; }
+  
+  /* Precision revealed actions on hover */
+  @media (min-width: 768px) {
+    .opacity-0-md { opacity: 0; transition: opacity 0.2s ease; }
+    tr:hover .hover-reveal { opacity: 1 !important; }
+  }
+</style>

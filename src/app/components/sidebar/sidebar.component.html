@@ -1,0 +1,35 @@
+<aside class="sidebar group">
+
+
+  <!-- Primary Protocols (Nav) -->
+  <nav class="sidebar-nav">
+    <ul class="nav-list">
+      <li *ngFor="let item of navItems" 
+          class="nav-item" 
+          [class.active]="item.active"
+          (click)="setActive(item)">
+        <div class="nav-link">
+          <div class="nav-icon-container">
+            <i class="bi {{ item.icon }}"></i>
+          </div>
+          <span class="nav-label">{{ item.label }}</span>
+          <div class="active-indicator" *ngIf="item.active"></div>
+        </div>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- System Role Controller (Footer) -->
+  <div class="sidebar-footer">
+    <!-- Interface Profile -->
+    <div class="profile-rail">
+      <div class="avatar-ring">
+        <img src="https://ui-avatars.com/api/?name=Admin&background=6366f1&color=fff" alt="Profile" class="avatar-img">
+        <div class="status-dot"></div>
+      </div>
+      <div class="profile-info">
+        <p class="name">Lead Auditor</p>
+        <p class="role uppercase">{{ currentRole }}</p>
+      </div>
+    </div>
+  </div></aside>

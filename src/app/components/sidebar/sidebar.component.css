@@ -1,0 +1,179 @@
+:host {
+  display: block;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.sidebar {
+  height: 100%;
+  background: #09090b; /* Zinc 950 for deep institutional authority */
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 72px; /* Initial Rail Width */
+  overflow: hidden;
+}
+
+.sidebar:hover {
+  width: 260px; /* Expanded Width */
+}
+
+/* Navigation Container */
+.sidebar {
+  padding-top: 12px;
+}
+
+
+
+/* Navigation Section */
+.sidebar-nav {
+  flex: 1;
+  padding: 24px 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  border-radius: 12px;
+  color: #a1a1aa;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  text-decoration: none;
+}
+
+.nav-icon-container {
+  width: 48px;
+  min-width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.nav-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  opacity: 0;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+
+.sidebar:hover .nav-label {
+  opacity: 1;
+}
+
+.nav-item.active .nav-link {
+  background: rgba(99, 102, 241, 0.1);
+  color: #a5b4fc;
+}
+
+.active-indicator {
+  position: absolute;
+  left: 0;
+  width: 3px;
+  height: 20px;
+  background: #6366f1;
+  border-radius: 0 4px 4px 0;
+}
+
+.nav-link:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.03);
+  color: #fff;
+}
+
+/* Footer Section */
+.sidebar-footer {
+  padding: 20px 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+
+.profile-rail {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px;
+}
+
+.avatar-ring {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.status-dot {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  background: #10b981;
+  border: 2px solid #09090b;
+  border-radius: 50%;
+}
+
+.profile-info {
+  opacity: 0;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sidebar:hover .profile-info {
+  opacity: 1;
+}
+
+.profile-info .name {
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.profile-info .role {
+  color: #71717a;
+  font-size: 0.625rem;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+/* Horizontal Scroll Fix */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}

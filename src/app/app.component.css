@@ -1,0 +1,37 @@
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  background-color: #fafafa;
+}
+
+:host-context(.dark) .app-shell {
+  background-color: #09090b; /* Zinc 950 */
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Prevent flex overflow */
+  transition: all 0.3s ease;
+}
+
+.content-surface {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    flex-direction: column;
+  }
+  
+  app-sidebar {
+    display: none; 
+  }
+
+  .main-content {
+    padding-bottom: 80px; /* Reserved space for sticky mobile bottom nav */
+  }
+}

@@ -1,0 +1,102 @@
+<header class="h-16 flex items-center px-6 bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-white/10 sticky top-0 z-40 backdrop-blur-md bg-opacity-80">
+  
+  <!-- Institutional Brand Logo -->
+  <div class="flex items-center gap-3 mr-auto pr-6 border-r border-zinc-200 dark:border-white/10 h-full">
+    <div class="w-10 h-10 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 rounded-xl flex items-center justify-center overflow-hidden active:scale-95 transition-all">
+      <img src="brand/logo.png" alt="Zorvyn Logo" class="w-7 h-7 object-contain">
+    </div>
+    <div class="flex flex-col">
+      <span class="text-zinc-900 dark:text-white font-black tracking-tighter text-lg uppercase leading-none">Zorvyn</span>
+    </div>
+  </div>
+
+  <!-- Left: Header Area (Breadcrumb/Title) -->
+  <!-- Center: Strategic Audit Search -->
+  <div class="flex-1 max-w-2xl mx-auto px-8 hidden md:block">
+    <div class="relative group">
+      <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+        <i class="bi bi-search text-zinc-400 group-focus-within:text-rose-500 transition-colors duration-300"></i>
+      </div>
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm"
+        (input)="onSearchChange()"
+        (keyup.enter)="selectSuggestion(searchTerm)"
+        (blur)="hideSuggestionsWithDelay()"
+        (focus)="onSearchChange()"
+        placeholder="Global audit query (ID, Narration, Classification...)" 
+        class="w-full bg-zinc-200/50 dark:bg-white/5 border border-transparent focus:bg-white dark:focus:bg-zinc-800 focus:border-rose-500/40 focus:ring-4 focus:ring-rose-500/5 rounded-2xl py-2.5 pl-10 pr-4 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 focus:outline-none transition-all duration-300"
+      >
+      
+      <!-- Search Suggestions Dropdown (Premium Dark Mode Polish) -->
+      <div *ngIf="isSuggestionsOpen" 
+        class="absolute top-full left-0 right-0 mt-3 bg-white/95 dark:bg-zinc-950/90 border border-zinc-200 dark:border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden z-50 backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-300">
+        <div class="px-4 py-2.5 border-b border-zinc-100 dark:border-white/5 bg-zinc-50/50 dark:bg-white/5">
+          <span class="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">Audit Matches</span>
+        </div>
+        <ul class="py-1">
+          <li *ngFor="let suggestion of filteredSuggestions"
+            (mousedown)="selectSuggestion(suggestion)"
+            class="px-4 py-3 flex items-center gap-3 hover:bg-rose-600/5 dark:hover:bg-rose-500/10 cursor-pointer group transition-all duration-200">
+            <div class="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-600 group-hover:bg-rose-500 group-hover:scale-125 transition-all"></div>
+            <span class="text-sm font-medium text-zinc-600 dark:text-zinc-300 group-hover:text-rose-600 dark:group-hover:text-white transition-colors">{{ suggestion }}</span>
+          </li>
+        </ul>
+        <div class="px-4 py-2 border-t border-zinc-100 dark:border-white/5 bg-zinc-50/30 dark:bg-white/[0.02]">
+          <span class="text-[8px] text-zinc-400">Press <kbd class="px-1 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 font-sans">Enter</kbd> to jump to results</span>
+        </div>
+      </div>
+      <!-- Search Shortcut Badge Removal as requested -->
+    </div>
+  </div>
+
+  <!-- Right: Header Actions Hub -->
+  <div class="flex items-center gap-2 shrink-0">
+    
+    <!-- Notifications (Digital Audit Feed) - Hidden on Mobile to save space -->
+    <button class="relative w-10 h-10 hidden sm:flex items-center justify-center rounded-xl text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/10 transition-all border border-transparent active:scale-95">
+      <i class="bi bi-bell-fill text-lg"></i>
+      <span class="absolute top-2 right-2 w-2 h-2 bg-rose-500 border-2 border-zinc-50 dark:border-zinc-900 rounded-full"></span>
+    </button>
+
+    <!-- Theme Control (Institutional-Grade) -->
+    <button
+      (click)="toggleTheme()"
+      class="w-10 h-10 flex items-center justify-center rounded-xl text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/10 transition-all border border-transparent active:scale-95"
+      [title]="isDarkMode ? 'Operational: Daylight Mode' : 'Operational: Night Protocol'"
+    >
+      <i class="bi" [class.bi-moon-stars-fill]="!isDarkMode" [class.bi-brightness-high-fill]="isDarkMode"></i>
+    </button>
+
+    <!-- Role Switcher (Institutional Hub Upgrade) -->
+    <div class="flex bg-zinc-200/50 dark:bg-white/5 p-1 rounded-xl border border-zinc-200 dark:border-white/10 ml-1 sm:ml-2 overflow-hidden">
+      <button 
+        (click)="onRoleChange('viewer')"
+        [ngClass]="{'bg-zinc-900 text-white shadow-xl': currentRole === 'viewer', 'text-zinc-500': currentRole !== 'viewer'}"
+        class="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[8px] sm:text-[9px] font-black uppercase tracking-widest transition-all">
+        Viewer
+      </button>
+      <button 
+        (click)="onRoleChange('admin')"
+        [ngClass]="{'bg-indigo-600 text-white shadow-indigo-500/20': currentRole === 'admin', 'text-zinc-500': currentRole !== 'admin'}"
+        class="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[8px] sm:text-[9px] font-black uppercase tracking-widest transition-all">
+        Admin
+      </button>
+    </div>
+
+    <!-- Professional Profile HUB -->
+    <div class="flex items-center gap-3 pl-3 ml-2 border-l border-zinc-200 dark:border-white/10">
+      <div class="hidden lg:flex flex-col items-end text-right">
+        <span class="text-xs font-bold text-zinc-900 dark:text-zinc-100">Audit Lead</span>
+        <span class="text-[9px] font-black uppercase text-zinc-500 tracking-widest">{{ currentRole }}</span>
+      </div>
+      <div class="relative group">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-400 p-[1.5px] cursor-pointer hover:shadow-lg hover:shadow-indigo-500/20 active:scale-95 transition-all">
+          <div class="w-full h-full rounded-[10px] bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center overflow-hidden">
+            <img src="https://ui-avatars.com/api/?name=Admin&background=6366f1&color=fff" alt="User Avatar" class="w-full h-full object-cover">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

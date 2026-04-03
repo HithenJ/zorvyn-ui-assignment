@@ -1,0 +1,183 @@
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+
+  <!-- Loading skeleton -->
+  <div *ngIf="loading" class="animate-pulse space-y-10">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div *ngFor="let i of [0,1,2,3]" class="h-28 bg-zinc-100 dark:bg-white/5 rounded-2xl"></div>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="h-72 bg-zinc-100 dark:bg-white/5 rounded-2xl"></div>
+      <div class="h-72 bg-zinc-100 dark:bg-white/5 rounded-2xl"></div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading" class="space-y-10">
+
+    <!-- Header row -->
+    <section class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2.5 mb-1">
+          <h2 class="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight">Account Overview</h2>
+          <span *ngIf="currentRole === 'admin'"
+            class="px-2 py-0.5 bg-rose-500/10 text-rose-500 text-[9px] font-bold uppercase tracking-widest rounded-md border border-rose-500/20">
+            Admin
+          </span>
+        </div>
+        <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-1">Reporting Period: {{ totalDateRange }}</p>
+      </div>
+
+      <!-- Timeframe switcher -->
+      <div class="flex items-center gap-0.5 p-0.5 bg-zinc-100 dark:bg-white/5 rounded-xl border border-zinc-200 dark:border-white/8 self-start sm:self-auto">
+        <button
+          *ngFor="let tf of timeframeOptions"
+          (click)="onTimeframeChange(tf)"
+          class="px-4 py-2 rounded-[9px] text-[11px] font-semibold tracking-wide transition-all duration-150 capitalize"
+          [ngClass]="currentTimeframe === tf
+            ? 'bg-rose-600 text-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none ring-1 ring-rose-500'
+            : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-white/10'">
+          {{ tf === 'all' ? 'All time' : tf }}
+        </button>
+      </div>
+    </section>
+
+    <section id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <app-summary-card title="Total Balance"       [amount]="summary.totalBalance"        [change]="summary.monthlyChange" type="neutral" (cardClick)="handleCardClick('all')"></app-summary-card>
+      <app-summary-card title="Income"              [amount]="summary.totalIncome"          [change]="12.5"                  type="success" (cardClick)="handleCardClick('income')"></app-summary-card>
+      <app-summary-card title="Expenses"            [amount]="summary.totalExpenses"        [change]="-8.2"                  type="danger"  (cardClick)="handleCardClick('expense')"></app-summary-card>
+      <app-summary-card title="Investment Portfolio"[amount]="summary.totalBalance * 1.8"   [change]="5.4"                   type="neutral" (cardClick)="handleCardClick('all')"></app-summary-card>
+    </section>
+
+    <!-- Charts row -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- Cashflow -->
+      <div class="bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-6 flex flex-col gap-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none ring-1 ring-zinc-200 dark:ring-white/5">
+        <div class="flex items-start justify-between">
+          <div>
+            <h3 class="text-sm font-semibold text-zinc-900 dark:text-white">Liquidity Movement</h3>
+            <p class="text-xs text-zinc-400 mt-0.5 capitalize">{{ currentTimeframe }} balance trajectory</p>
+          </div>
+          <span class="px-2.5 py-1 bg-blue-500/10 text-blue-500 text-[10px] font-semibold rounded-lg">Line view</span>
+        </div>
+        <app-balance-chart [transactions]="displayTransactions" [timeframe]="currentTimeframe" [height]="280"></app-balance-chart>
+      </div>
+
+      <!-- Spending -->
+      <div class="bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-6 flex flex-col gap-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none ring-1 ring-zinc-200 dark:ring-white/5">
+        <div>
+          <h3 class="text-sm font-semibold text-zinc-900 dark:text-white">Capital Allocation</h3>
+          <p class="text-xs text-zinc-400 mt-0.5">Categorical spending distribution</p>
+        </div>
+        <app-spending-chart [insights]="insights" [size]="260"></app-spending-chart>
+      </div>
+
+    </section>
+
+    <!-- Insights row -->
+    <section id="insights" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- Savings ring -->
+      <div class="bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-6 flex flex-col gap-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none ring-1 ring-zinc-200 dark:ring-white/5">
+        <div>
+          <h3 class="text-sm font-semibold text-zinc-900 dark:text-white">Retention Efficiency</h3>
+          <p class="text-xs text-zinc-400 mt-0.5">Cashflow stability score</p>
+        </div>
+        <div class="flex flex-col items-center gap-4">
+          <div class="relative w-44 h-44">
+            <svg class="w-full h-full -rotate-90" viewBox="0 0 104 104">
+              <circle cx="52" cy="52" r="44" stroke="currentColor" stroke-width="8" fill="transparent" class="text-zinc-100 dark:text-white/8"></circle>
+              <circle cx="52" cy="52" r="44" stroke="currentColor" stroke-width="8" fill="transparent" class="text-rose-500 transition-all duration-1000"
+                stroke-dasharray="276.46"
+                [attr.stroke-dashoffset]="276.46 - (276.46 * summary.healthScore / 100)"
+                stroke-linecap="round"></circle>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span class="text-4xl font-bold text-zinc-900 dark:text-white">{{ summary.healthScore }}%</span>
+              <span class="text-[10px] text-zinc-400 uppercase tracking-widest font-medium mt-1">Monthly</span>
+            </div>
+          </div>
+          <p class="text-xs text-zinc-400 text-center max-w-xs leading-relaxed">
+            You are saving <span class="text-zinc-700 dark:text-zinc-200 font-semibold">{{ summary.healthScore }}%</span> of total income this month.
+          </p>
+        </div>
+      </div>
+
+      <!-- Critical analysis -->
+      <div *ngIf="insights.length > 0" class="bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-6 flex flex-col justify-between gap-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
+        <div>
+          <h3 class="text-sm font-semibold text-zinc-900 dark:text-white">Primary Expenditure</h3>
+          <p class="text-xs text-zinc-400 mt-0.5">Highest outflow category</p>
+        </div>
+
+        <div class="flex items-end justify-between">
+          <div class="space-y-1">
+            <span class="block text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">{{ insights[0].category }}</span>
+            <p class="text-sm font-semibold text-rose-500">{{ insights[0].amount | currency:'INR':'symbol':'1.0-0' }} spent</p>
+          </div>
+          <div class="text-right">
+            <span class="text-2xl font-bold text-zinc-900 dark:text-white">{{ insights[0].percentage.toFixed(0) }}%</span>
+            <span class="block text-[10px] text-zinc-400 font-medium mt-0.5">of total spend</span>
+          </div>
+        </div>
+
+        <div class="w-full h-2 bg-zinc-100 dark:bg-white/8 rounded-full overflow-hidden">
+          <div class="h-full bg-rose-500 rounded-full transition-all duration-1000" [style.width.%]="insights[0].percentage"></div>
+        </div>
+
+        <div class="p-4 bg-zinc-50 dark:bg-white/[0.03] rounded-xl border border-zinc-100 dark:border-white/8">
+          <p class="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+            Cutting <span class="text-zinc-800 dark:text-zinc-200 font-semibold">{{ insights[0].category }}</span> by 15% could save
+            <span class="text-emerald-500 font-semibold">{{ (insights[0].amount * 0.15) | currency:'INR':'symbol':'1.0-0' }}</span> next month.
+          </p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Category snapshots -->
+    <section *ngIf="insights.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div *ngFor="let insight of insights.slice(1, 4)"
+        class="bg-zinc-50 dark:bg-zinc-900 rounded-2xl px-5 py-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-white/5 transition-all duration-150 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none">
+        <div>
+          <p class="text-[10px] font-semibold text-zinc-400 uppercase tracking-widest mb-1">{{ insight.category }}</p>
+          <p class="text-base font-bold text-zinc-900 dark:text-white">{{ insight.amount | currency:'INR':'symbol':'1.0-0' }}</p>
+        </div>
+        <span class="text-sm font-semibold text-zinc-400">{{ insight.percentage.toFixed(0) }}%</span>
+      </div>
+    </section>
+
+    <!-- Transaction list -->
+    <section id="ledger" class="bg-zinc-50 dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none">
+      <div class="p-6">
+        <app-transaction-list
+          [displayTransactions]="displayTransactions"
+          [searchTerm]="currentSearchTerm"
+          [currentRole]="currentRole"
+          [loading]="loading"
+          [startDate]="startDateStr"
+          [endDate]="endDateStr"
+          [dateRangeLabel]="totalDateRange"
+          (add)="onAddTransaction()"
+          (edit)="onEditTransaction($event)"
+          (delete)="onDeleteTransaction($event)"
+          (search)="onSearch($event)"
+          (categoryChange)="onCategoryFilter($event)"
+          (typeChange)="onTypeFilter($event)"
+          (dateRangeChange)="onDateRangeFilter($event)"
+          (export)="onExport()">
+        </app-transaction-list>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Modal -->
+  <app-transaction-form
+    [isOpen]="isModalOpen"
+    [transaction]="selectedTransaction"
+    (close)="isModalOpen = false"
+    (save)="handleSaveTransaction($event)">
+  </app-transaction-form>
+
+
+</main>

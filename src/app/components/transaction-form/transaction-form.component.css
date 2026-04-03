@@ -1,0 +1,70 @@
+/* Transaction Form styles */
+.animate-in {
+  animation-duration: 300ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-in {
+  animation-name: fadeIn;
+}
+
+.slide-in-from-bottom-4 {
+  animation-name: slideInFromBottom;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInFromBottom {
+  from { transform: translateY(1rem); }
+  to { transform: translateY(0); }
+}
+
+/* Dark mode overrides — :host-context pierces Angular ViewEncapsulation */
+:host-context(.dark) .modal-card {
+  background-color: rgb(24, 24, 27) !important; /* zinc-900 */
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+:host-context(.dark) .modal-header {
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+:host-context(.dark) .modal-footer {
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+:host-context(.dark) input,
+:host-context(.dark) textarea {
+  background-color: rgb(39, 39, 42) !important; /* zinc-800 */
+  color: rgb(244, 244, 245) !important;          /* zinc-100 */
+  border-color: rgba(255,255,255,0.1) !important;
+  color-scheme: dark;
+}
+
+:host-context(.dark) .cancel-btn {
+  background-color: rgba(255,255,255,0.05) !important;
+  color: rgb(161, 161, 170) !important; /* zinc-400 */
+}
+
+:host-context(.dark) .category-btn {
+  background-color: rgb(39, 39, 42) !important;
+  color: rgb(244, 244, 245) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+
+:host-context(.dark) .category-dropdown {
+  background-color: rgb(39, 39, 42) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+
+:host-context(.dark) .category-item {
+  color: rgb(212, 212, 216) !important; /* zinc-300 */
+}
+
+:host-context(.dark) .category-item:hover {
+  background-color: rgba(255,255,255,0.05) !important;
+}
+
