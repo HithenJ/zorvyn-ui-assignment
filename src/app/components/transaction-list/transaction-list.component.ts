@@ -17,6 +17,7 @@ import { Transaction, UserRole } from '../../models/transaction.model';
   styleUrls: ['./transaction-list.component.css']
 })
 export class TransactionListComponent implements OnInit {
+
   @Input() displayTransactions: Transaction[] = [];
   @Input() currentRole: UserRole = 'viewer';
   @Input() loading = false;
@@ -42,9 +43,19 @@ export class TransactionListComponent implements OnInit {
 
   isCategoryDropdownOpen = false;
 
-  categories: string[] = ['All Categories', 'Food', 'Salary', 'Rent', 'Utilities', 'Shopping', 'Transport', 'Healthcare', 'Entertainment', 'Other'];
+  categories: string[] = [
+    'All Categories', 'Food', 'Salary', 'Rent', 'Utilities',
+    'Shopping', 'Transport', 'Healthcare', 'Entertainment', 'Other'
+  ];
 
   ngOnInit(): void {}
+
+  // 🔥 CORE FIX: convert UTC → local time
+  toLocalDate(date: any): Date {
+    const d = new Date(date);
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d;
+  }
 
   onSearchChange(): void {
     this.search.emit(this.searchTerm);
@@ -76,10 +87,18 @@ export class TransactionListComponent implements OnInit {
     }
   }
 
+  // ✅ FIXED GROUPING + SORTING
   get groupedTransactions(): { date: string, items: Transaction[] }[] {
+
     const sorted = [...this.displayTransactions].sort((a, b) => {
-      const fieldA = this.sortBy === 'date' ? new Date(a.date).getTime() : a.amount;
-      const fieldB = this.sortBy === 'date' ? new Date(b.date).getTime() : b.amount;
+      const fieldA = this.sortBy === 'date'
+        ? this.toLocalDate(a.date).getTime()
+        : a.amount;
+
+      const fieldB = this.sortBy === 'date'
+        ? this.toLocalDate(b.date).getTime()
+        : b.amount;
+
       return this.sortOrder === 'desc' ? fieldB - fieldA : fieldA - fieldB;
     });
 
@@ -87,24 +106,28 @@ export class TransactionListComponent implements OnInit {
     const map = new Map<string, Transaction[]>();
 
     sorted.forEach(t => {
-      const dateStr = new Date(t.date).toLocaleDateString('en-IN', { 
+      const localDate = this.toLocalDate(t.date);
+
+      const dateStr = localDate.toLocaleDateString('en-IN', { 
         weekday: 'short', 
         year: 'numeric', 
         month: 'short', 
         day: 'numeric' 
       });
-      
+
       if (!map.has(dateStr)) {
         const newGroup = { date: dateStr, items: [] };
         groups.push(newGroup);
         map.set(dateStr, newGroup.items);
       }
+
       map.get(dateStr)!.push(t);
     });
 
     return groups;
   }
 
+  // ✅ FIXED TODAY CHECK
   isToday(dateStr: string): boolean {
     const today = new Date().toLocaleDateString('en-IN', { 
       weekday: 'short', 
@@ -112,6 +135,7 @@ export class TransactionListComponent implements OnInit {
       month: 'short', 
       day: 'numeric' 
     });
+
     return dateStr === today;
   }
 }
