@@ -11,15 +11,21 @@ import { Transaction } from '../../models/transaction.model';
   styleUrls: ['./transaction-form.component.css']
 })
 export class TransactionFormComponent implements OnInit, OnChanges {
+
   @Input() transaction?: Transaction;
   @Input() isOpen: boolean = false;
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<Omit<Transaction, 'id'>>();
 
   transactionForm: FormGroup;
-  categories = ['Salary', 'Freelance', 'Food', 'Electronics', 'Healthcare', 'Home', 'Shopping', 'Transportation', 'Entertainment', 'Education', 'Investment', 'Other'];
+
+  categories = [
+    'Salary', 'Freelance', 'Food', 'Electronics', 'Healthcare',
+    'Home', 'Shopping', 'Transportation', 'Entertainment',
+    'Education', 'Investment', 'Other'
+  ];
   
-  isDropdownOpen = false; // Custom dropdown state
+  isDropdownOpen = false;
 
   constructor(private fb: FormBuilder) {
     this.transactionForm = this.fb.group({
@@ -27,7 +33,7 @@ export class TransactionFormComponent implements OnInit, OnChanges {
       amount: [0, [Validators.required, Validators.min(0.01)]],
       category: ['Shopping', Validators.required],
       type: ['expense', Validators.required],
-      date: [new Date().toISOString().substring(0, 10), Validators.required]
+      date: [this.getTodayDate(), Validators.required] // ✅ FIXED
     });
   }
 
@@ -41,11 +47,17 @@ export class TransactionFormComponent implements OnInit, OnChanges {
     }
   }
 
+  // ✅ Get today's date in YYYY-MM-DD (LOCAL, no UTC bug)
+  getTodayDate(): string {
+    const d = new Date();
+    return d.toISOString().split('T')[0];
+  }
+
   private updateFormValues(): void {
     if (this.transaction) {
-      const dateValue = typeof this.transaction.date === 'string' 
-        ? this.transaction.date.substring(0, 10)
-        : new Date(this.transaction.date).toISOString().substring(0, 10);
+      const d = new Date(this.transaction.date);
+
+      const dateValue = d.toISOString().split('T')[0]; // only for input display
 
       this.transactionForm.patchValue({
         description: this.transaction.description,
@@ -60,7 +72,7 @@ export class TransactionFormComponent implements OnInit, OnChanges {
         amount: 0,
         category: 'Shopping',
         type: 'expense',
-        date: new Date().toISOString().substring(0, 10)
+        date: this.getTodayDate() // ✅ FIXED
       });
     }
   }
@@ -68,10 +80,22 @@ export class TransactionFormComponent implements OnInit, OnChanges {
   onSubmit(): void {
     if (this.transactionForm.valid) {
       const formValue = this.transactionForm.value;
+
+      // ✅ CRITICAL FIX: combine selected date + current time (LOCAL)
+      const now = new Date();
+      const selectedDate = new Date(formValue.date);
+
+      selectedDate.setHours(
+        now.getHours(),
+        now.getMinutes(),
+        now.getSeconds()
+      );
+
       const transactionData: Omit<Transaction, 'id'> = {
         ...formValue,
-        date: new Date(formValue.date).toISOString()
+        date: selectedDate // ❌ NO toISOString()
       };
+
       this.save.emit(transactionData);
       this.onClose();
     }
