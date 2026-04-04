@@ -120,9 +120,11 @@
               <td>
                 <span class="text-zinc-400 text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 0.05em;">{{ tx.category }}</span>
               </td>
-              <td class="d-none d-md-table-cell">
-                <span class="text-zinc-400" style="font-size: 0.75rem;">{{ tx.date | date:'h:mm a' }}</span>
-              </td>
+            <td class="d-none d-md-table-cell">
+  <span class="text-zinc-400" style="font-size: 0.75rem;">
+    {{ tx.date | date:'h:mm a':'UTC' }}
+  </span>
+</td>
               <td class="pe-4 text-end">
                 <div class="d-flex align-items-center justify-content-end gap-3 group">
                   <span [ngClass]="tx.type === 'income' ? 'text-emerald-500' : 'text-rose-500 dark:text-rose-400'" 
