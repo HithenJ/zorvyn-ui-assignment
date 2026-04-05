@@ -1,1 +1,39 @@
 /* Transaction list component specific styles */
+/* Bootstrap + theme bridge (rose primary) */
+.text-primary {
+  color: #f43f5e !important;
+}
+
+.btn-primary {
+  background-color: #f43f5e;
+  border-color: #f43f5e;
+}
+
+.btn-primary:hover {
+  background-color: #e11d48;
+  border-color: #e11d48;
+}
+
+.hover-primary:hover {
+  color: #f43f5e !important;
+}
+
+.hover-danger:hover {
+  color: #e11d48 !important;
+}
+
+/* Row actions: always visible on small screens; fade in on row hover (desktop) */
+.hover-reveal {
+  opacity: 1;
+}
+
+@media (min-width: 768px) {
+  .hover-reveal {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  tr:hover .hover-reveal {
+    opacity: 1 !important;
+  }
+}
