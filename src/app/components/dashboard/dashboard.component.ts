@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter, Input, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { Subscription } from 'rxjs';
 
@@ -49,6 +49,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loading = true;
   isModalOpen = false;
   currentSearchTerm: string = '';
+  /** Mirrors FinanceService filters so the ledger UI stays in sync (e.g. summary-card type filter). */
+  currentLedgerType: 'all' | 'income' | 'expense' = 'all';
+  currentLedgerCategory = 'All Categories';
   selectedTransaction?: Transaction;
 
   private subscriptions: Subscription[] = [];
@@ -102,6 +105,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Subscribe to filters for UI state (e.g. date inputs + search banner)
     const filterSub = this.financeService.getFilters().subscribe(filters => {
       this.currentSearchTerm = filters.search;
+      const t = filters.type;
+      this.currentLedgerType =
+        !t || t === '' || t === 'all' ? 'all' : (t as 'income' | 'expense');
+      this.currentLedgerCategory =
+        filters.category && filters.category !== '' ? filters.category : 'All Categories';
       if (filters.dateRange) {
         this.startDateStr = this.formatDateForInput(filters.dateRange.start);
         this.endDateStr = this.formatDateForInput(filters.dateRange.end);
