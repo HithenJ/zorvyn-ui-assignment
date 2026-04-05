@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -16,11 +16,13 @@ import { Transaction, UserRole } from '../../models/transaction.model';
   templateUrl: './transaction-list.component.html',
   styleUrls: ['./transaction-list.component.css']
 })
-export class TransactionListComponent implements OnInit {
-
+export class TransactionListComponent implements OnInit, OnChanges {
   @Input() displayTransactions: Transaction[] = [];
   @Input() currentRole: UserRole = 'viewer';
   @Input() loading = false;
+  /** Synced from parent / FinanceService so filters match summary cards and global search. */
+  @Input() ledgerType: 'all' | 'income' | 'expense' = 'all';
+  @Input() ledgerCategory = 'All Categories';
 
   @Output() add = new EventEmitter<void>();
   @Output() edit = new EventEmitter<Transaction>();
@@ -43,22 +45,51 @@ export class TransactionListComponent implements OnInit {
 
   isCategoryDropdownOpen = false;
 
-  categories: string[] = [
-    'All Categories', 'Food', 'Salary', 'Rent', 'Utilities',
-    'Shopping', 'Transport', 'Healthcare', 'Entertainment', 'Other'
-  ];
+  categories: string[] = ['All Categories', 'Food', 'Salary', 'Rent', 'Utilities', 'Shopping', 'Transport', 'Healthcare', 'Entertainment', 'Other'];
 
   ngOnInit(): void {}
 
-  // 🔥 CORE FIX: convert UTC → local time
-  toLocalDate(date: any): Date {
-    const d = new Date(date);
-    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-    return d;
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['ledgerType'] && this.ledgerType != null) {
+      this.selectedType = this.ledgerType;
+    }
+    if (changes['ledgerCategory']) {
+      this.selectedCategory = this.ledgerCategory;
+    }
   }
 
   onSearchChange(): void {
     this.search.emit(this.searchTerm);
+  }
+
+  clearAuditFilters(): void {
+    this.search.emit('');
+    this.typeChange.emit('all');
+    this.categoryChange.emit('All Categories');
+  }
+
+  get activeFilterDescription(): string {
+    const parts: string[] = [];
+    if (this.selectedType !== 'all') {
+      const label = this.selectedType === 'income' ? 'Income' : 'Expense';
+      parts.push(`${label} transactions`);
+    }
+    if (this.selectedCategory !== 'All Categories') {
+      parts.push(`Category: ${this.selectedCategory}`);
+    }
+    const q = this.searchTerm?.trim();
+    if (q) {
+      parts.push(`Search: "${q}"`);
+    }
+    return parts.join(' · ');
+  }
+
+  get hasLedgerFilters(): boolean {
+    return (
+      this.selectedType !== 'all' ||
+      this.selectedCategory !== 'All Categories' ||
+      !!this.searchTerm?.trim()
+    );
   }
 
   onCategorySelect(category: string): void {
@@ -87,18 +118,10 @@ export class TransactionListComponent implements OnInit {
     }
   }
 
-  // ✅ FIXED GROUPING + SORTING
   get groupedTransactions(): { date: string, items: Transaction[] }[] {
-
     const sorted = [...this.displayTransactions].sort((a, b) => {
-      const fieldA = this.sortBy === 'date'
-        ? this.toLocalDate(a.date).getTime()
-        : a.amount;
-
-      const fieldB = this.sortBy === 'date'
-        ? this.toLocalDate(b.date).getTime()
-        : b.amount;
-
+      const fieldA = this.sortBy === 'date' ? new Date(a.date).getTime() : a.amount;
+      const fieldB = this.sortBy === 'date' ? new Date(b.date).getTime() : b.amount;
       return this.sortOrder === 'desc' ? fieldB - fieldA : fieldA - fieldB;
     });
 
@@ -106,28 +129,24 @@ export class TransactionListComponent implements OnInit {
     const map = new Map<string, Transaction[]>();
 
     sorted.forEach(t => {
-      const localDate = this.toLocalDate(t.date);
-
-      const dateStr = localDate.toLocaleDateString('en-IN', { 
+      const dateStr = new Date(t.date).toLocaleDateString('en-IN', { 
         weekday: 'short', 
         year: 'numeric', 
         month: 'short', 
         day: 'numeric' 
       });
-
+      
       if (!map.has(dateStr)) {
         const newGroup = { date: dateStr, items: [] };
         groups.push(newGroup);
         map.set(dateStr, newGroup.items);
       }
-
       map.get(dateStr)!.push(t);
     });
 
     return groups;
   }
 
-  // ✅ FIXED TODAY CHECK
   isToday(dateStr: string): boolean {
     const today = new Date().toLocaleDateString('en-IN', { 
       weekday: 'short', 
@@ -135,7 +154,6 @@ export class TransactionListComponent implements OnInit {
       month: 'short', 
       day: 'numeric' 
     });
-
     return dateStr === today;
   }
 }
