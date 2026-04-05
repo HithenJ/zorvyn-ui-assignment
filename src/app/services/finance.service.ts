@@ -110,10 +110,6 @@ export class FinanceService {
           filtered = filtered.filter(t => t.category === filters.category);
         }
 
-        if (filters.type && filters.type !== '' && filters.type !== 'all') {
-          filtered = filtered.filter(t => t.type === filters.type);
-        }
-
         if (filters.search) {
           const searchLower = filters.search.toLowerCase();
           filtered = filtered.filter(t => 
@@ -122,10 +118,15 @@ export class FinanceService {
           );
         }
 
-        this.lastFilteredTransactions = filtered; // Update the export state
-        
-        // Trigger summary and insights update based on this specific filtered set
+        // Summary + spending insights: use timeframe/category/search only — not income vs expense.
+        // Otherwise clicking a summary card (ledger type filter) zeros out the other cards.
         this.updateSummaryAndInsights(filtered);
+
+        if (filters.type && filters.type !== '' && filters.type !== 'all') {
+          filtered = filtered.filter(t => t.type === filters.type);
+        }
+
+        this.lastFilteredTransactions = filtered;
 
         return filtered;
       })
